@@ -14,21 +14,20 @@ load_dotenv()
 
 
 machine = TocMachine(
-    states=["user", "state1", "state2"],
+    states=['input_server',
+        'input_place',
+        'input_tag',
+        'show_recommand'],
     transitions=[
-        {
-            "trigger": "advance",
-            "source": "user",
-            "dest": "state1",
-            "conditions": "is_going_to_state1",
-        },
-        {
-            "trigger": "advance",
-            "source": "user",
-            "dest": "state2",
-            "conditions": "is_going_to_state2",
-        },
-        {"trigger": "go_back", "source": ["state1", "state2"], "dest": "user"},
+        {'trigger': 'advance', 'source': 'user', 'dest': 'input_server', 'conditions': 'is_going_to_input_server'},
+        {'trigger': 'advance', 'source': 'input_server', 'dest': 'input_place', 'conditions': 'is_going_to_input_place'},
+        {'trigger': 'advance', 'source': 'input_place', 'dest': 'input_tag', 'conditions': 'is_going_to_input_tag'},
+        {'trigger': 'advance', 'source': 'input_tag', 'dest': 'show_recommand', 'conditions': 'is_going_to_show_recommand'},
+        {'trigger': 'advance', 'source': 'show_recommand', 'dest': 'input_server', 'conditions': 'is_going_to_input_server'},
+        {"trigger": "go_back", "source": ['input_server',
+                'input_place',
+                'input_tag',
+                'show_recommand',], "dest": "user"},
     ],
     initial="user",
     auto_transitions=False,
@@ -57,7 +56,7 @@ def callback():
     signature = request.headers["X-Line-Signature"]
     # get request body as text
     body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
+    app.logger.info(f"Request body: {body}")
 
     # parse webhook body
     try:
@@ -71,10 +70,13 @@ def callback():
             continue
         if not isinstance(event.message, TextMessage):
             continue
-
-        line_bot_api.reply_message(
-            event.reply_token, TextSendMessage(text=event.message.text)
-        )
+        if not isinstance(event.message.text, str):
+            continue
+        print(f"\nFSM STATE: {machine.state}")
+        print(f"REQUEST BODY: \n{body}")
+        response = machine.advance(event)
+        if response == False:
+            send_text_message(event.reply_token, "Not Entering any State")
 
     return "OK"
 
