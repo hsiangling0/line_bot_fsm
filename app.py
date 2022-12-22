@@ -9,6 +9,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 from fsm import TocMachine
 from utils import send_text_message
+from transitions.extensions import GraphMachine
 
 load_dotenv()
 
@@ -17,17 +18,25 @@ machine = TocMachine(
     states=['input_server',
         'input_place',
         'input_tag',
-        'show_recommand'],
+        'show_recommand',
+        'input_sour','input_non_sour_flavor','input_sour_flavor','show_non_sour_rm','show_sour_rm'],
     transitions=[
         {'trigger': 'advance', 'source': 'user', 'dest': 'input_server', 'conditions': 'is_going_to_input_server'},
         {'trigger': 'advance', 'source': 'input_server', 'dest': 'input_place', 'conditions': 'is_going_to_input_place'},
         {'trigger': 'advance', 'source': 'input_place', 'dest': 'input_tag', 'conditions': 'is_going_to_input_tag'},
         {'trigger': 'advance', 'source': 'input_tag', 'dest': 'show_recommand', 'conditions': 'is_going_to_show_recommand'},
         {'trigger': 'advance', 'source': 'show_recommand', 'dest': 'input_server', 'conditions': 'is_going_to_input_server'},
+        {'trigger': 'advance', 'source': 'input_server', 'dest': 'input_sour', 'conditions': 'is_going_to_input_sour'},
+        {'trigger': 'advance', 'source': 'input_sour', 'dest': 'input_non_sour_flavor', 'conditions': 'is_going_to_input_non_sour_flavor'},
+        {'trigger': 'advance', 'source': 'input_sour', 'dest': 'input_sour_flavor', 'conditions': 'is_going_to_input_sour_flavor'},
+        {'trigger': 'advance', 'source': 'input_non_sour_flavor', 'dest': 'show_non_sour_rm', 'conditions': 'is_going_to_show_non_sour_rm'},
+        {'trigger': 'advance', 'source': 'input_sour_flavor', 'dest': 'show_sour_rm', 'conditions': 'is_going_to_show_sour_rm'},
+        {'trigger': 'advance', 'source': 'show_non_sour_rm', 'dest': 'input_server', 'conditions': 'is_going_to_input_server'},
+        {'trigger': 'advance', 'source': 'show_sour_rm', 'dest': 'input_server', 'conditions': 'is_going_to_input_server'},
         {"trigger": "go_back", "source": ['input_server',
                 'input_place',
                 'input_tag',
-                'show_recommand',], "dest": "user"},
+                'show_recommand','input_sour','input_non_sour_flavor','input_sour_flavor','show_non_sour_rm','show_sour_rm'], "dest": "user"},
     ],
     initial="user",
     auto_transitions=False,
@@ -57,7 +66,6 @@ def callback():
     # get request body as text
     body = request.get_data(as_text=True)
     app.logger.info(f"Request body: {body}")
-
     # parse webhook body
     try:
         events = parser.parse(body, signature)
