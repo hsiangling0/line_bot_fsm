@@ -3,6 +3,8 @@ from utils import send_text_message, send_carousel_message, send_button_message,
 from bs4 import BeautifulSoup
 import requests
 from linebot.models import ImageCarouselColumn, URITemplateAction, MessageTemplateAction
+# import os
+# os.environ["PATH"] += os.pathsep + "C:/Program Files/Graphviz/bin"
 
 country=''
 server=''
@@ -13,7 +15,6 @@ flavor=''
 class TocMachine(GraphMachine):
     def __init__(self, **machine_configs):
         self.machine = GraphMachine(model=self, **machine_configs)
-
     def is_going_to_input_server(self,event):
         text=event.message.text
         if (text.lower()=='hello') or (text.lower()=='back'):
@@ -81,7 +82,7 @@ class TocMachine(GraphMachine):
         if text=='free wifi':
             tag=87
             return True
-        elif text=='eletrical outlets':
+        elif text=='electrical outlets':
             tag=88
             return True
         elif text=='no time limit':
