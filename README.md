@@ -1,25 +1,24 @@
-# TOC Project 2020
+# Café line bot
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/dc7fa47fcd809b99d087/maintainability)](https://codeclimate.com/github/NCKU-CCS/TOC-Project-2020/maintainability)
+## 前言
+龐大的課業壓力下,泡在圖書館寫程式的樣子成為日常，常常一待就是一整天，我們如何在這匆匆流逝的時光內找到一絲愜意，在苦澀中嚐到甘甜。
+Café Line Bot能為您找到合適的咖啡廳及咖啡豆，讓您在努力向前奔走的道路上，找到屬於您的充電站，在咖啡冷掉之前，享受抽離生活的美好。
 
-[![Known Vulnerabilities](https://snyk.io/test/github/NCKU-CCS/TOC-Project-2020/badge.svg)](https://snyk.io/test/github/NCKU-CCS/TOC-Project-2020)
+## 構想
+Café Line Bot提供兩種服務。
+* 推薦咖啡廳: 您可輸入所在的城市及在意的條件(有無wifi、插頭等)，我們會依據您提供的條件，為您推薦五家咖啡廳，方便您選擇。
+* 推薦咖啡豆(生產地): 手沖咖啡是許多咖啡愛好者所熟悉的，許多因素都會影響咖啡的風味，您可提供對咖啡口感的偏好，讓我們為您推薦適合的咖啡豆產地。
 
+### 組成
+* LINE Bot: Built by the official LINE Messaging API
+* Web Scraping: Use BeutifulSoup to scrape websites to recommand Café
+* Backend: Built the backend with Flask to handle the webhook
+* FSM: Create FSMs with pytransitions for the users state managemen
 
-Template Code for TOC Project 2020
+### FSM
+![fsm](./fsm.png)
 
-A Line bot based on a finite state machine
-
-More details in the [Slides](https://hackmd.io/@TTW/ToC-2019-Project#) and [FAQ](https://hackmd.io/s/B1Xw7E8kN)
-
-## Setup
-
-### Prerequisite
-* Python 3.6
-* Pipenv
-* Facebook Page and App
-* HTTPS Server
-
-#### Install Dependency
+### Install Dependency
 ```sh
 pip3 install pipenv
 
@@ -35,125 +34,37 @@ pipenv shell
 	* [Note: macOS Install error](https://github.com/pygraphviz/pygraphviz/issues/100)
 
 
-#### Secret Data
+### Secret Data
 You should generate a `.env` file to set Environment Variables refer to our `.env.sample`.
 `LINE_CHANNEL_SECRET` and `LINE_CHANNEL_ACCESS_TOKEN` **MUST** be set to proper values.
 Otherwise, you might not be able to run your code.
 
-#### Run Locally
+### Run Locally
 You can either setup https server or using `ngrok` as a proxy.
 
-#### a. Ngrok installation
-* [ macOS, Windows, Linux](https://ngrok.com/download)
+### Instruction
+* 基本操作:
+	* 指定大小寫皆可，但需輸入英文。
+	* 隨時輸入`hello`、`back`即可回到開頭，重新選擇想要的服務。
+* 架構:
+	* 選擇想要的服務 -> `find the cafe`或`choose coffee beans`
+	* 若選擇`find the cafe`:
+		* 輸入城市 -> `英文`
+		* 選擇條件 -> `free wifi`或`electrical outlets`或`no time limit`或`environment`
+		* 推薦五間適合的咖啡廳
+		* 輸入`back`回到開頭
+	* 若選擇`choose coffee beans`:
+		* 選擇喜歡的口感 -> `sour`或`bittersweet`
+		* 選擇喜歡的風味 -> 依據前一個選擇給出兩種口味選項
+		* 推薦適合的咖啡豆(生產地)與合適的烘焙度及搭配點心
+		* 輸入`back`回到開頭
 
-or you can use Homebrew (MAC)
-```sh
-brew cask install ngrok
-```
-
-**`ngrok` would be used in the following instruction**
-
-```sh
-ngrok http 8000
-```
-
-After that, `ngrok` would generate a https URL.
-
-#### Run the sever
-
-```sh
-python3 app.py
-```
-
-#### b. Servo
-
-Or You can use [servo](http://serveo.net/) to expose local servers to the internet.
-
-
-## Finite State Machine
-![fsm](./img/show-fsm.png)
-
-## Usage
-The initial state is set to `user`.
-
-Every time `user` state is triggered to `advance` to another state, it will `go_back` to `user` state after the bot replies corresponding message.
-
-* user
-	* Input: "go to state1"
-		* Reply: "I'm entering state1"
-
-	* Input: "go to state2"
-		* Reply: "I'm entering state2"
-
-## Deploy
-Setting to deploy webhooks on Heroku.
-
-### Heroku CLI installation
-
-* [macOS, Windows](https://devcenter.heroku.com/articles/heroku-cli)
-
-or you can use Homebrew (MAC)
-```sh
-brew tap heroku/brew && brew install heroku
-```
-
-or you can use Snap (Ubuntu 16+)
-```sh
-sudo snap install --classic heroku
-```
-
-### Connect to Heroku
-
-1. Register Heroku: https://signup.heroku.com
-
-2. Create Heroku project from website
-
-3. CLI Login
-
-	`heroku login`
-
-### Upload project to Heroku
-
-1. Add local project to Heroku project
-
-	heroku git:remote -a {HEROKU_APP_NAME}
-
-2. Upload project
-
-	```
-	git add .
-	git commit -m "Add code"
-	git push -f heroku master
-	```
-
-3. Set Environment - Line Messaging API Secret Keys
-
-	```
-	heroku config:set LINE_CHANNEL_SECRET=your_line_channel_secret
-	heroku config:set LINE_CHANNEL_ACCESS_TOKEN=your_line_channel_access_token
-	```
-
-4. Your Project is now running on Heroku!
-
-	url: `{HEROKU_APP_NAME}.herokuapp.com/callback`
-
-	debug command: `heroku logs --tail --app {HEROKU_APP_NAME}`
-
-5. If fail with `pygraphviz` install errors
-
-	run commands below can solve the problems
-	```
-	heroku buildpacks:set heroku/python
-	heroku buildpacks:add --index 1 heroku-community/apt
-	```
-
-	refference: https://hackmd.io/@ccw/B1Xw7E8kN?type=view#Q2-如何在-Heroku-使用-pygraphviz
-
-## Reference
-[Pipenv](https://medium.com/@chihsuan/pipenv-更簡單-更快速的-python-套件管理工具-135a47e504f4) ❤️ [@chihsuan](https://github.com/chihsuan)
-
-[TOC-Project-2019](https://github.com/winonecheng/TOC-Project-2019) ❤️ [@winonecheng](https://github.com/winonecheng)
-
-Flask Architecture ❤️ [@Sirius207](https://github.com/Sirius207)
-
-[Line line-bot-sdk-python](https://github.com/line/line-bot-sdk-python/tree/master/examples/flask-echo)
+### Demo
+![start](./img/line_start.jpg)
+![line_choose_place](./img/line_choose_place.jpg)
+![choose_condition](./img/choose_condition.jpg)
+![rm_cafe](./img/line_rm_cafe.jpg)
+![line_back](./img/line_back.jpg)
+![line_choose_flavor](./img/choose_flavor.jpg)
+![line_rm_beans](./img/line_rm_beans.jpg)
+![line_back](./img/back_to.jpg)
